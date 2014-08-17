@@ -1,0 +1,55 @@
+Application{
+			background-image: Embed(source="images/bg.png"); 
+			background-size: "100%";
+		 }
+HScrollBar
+{
+	downArrowSkin: Embed(skinClass="HScrollBar_downArrowSkin");
+	thumbIcon: Embed(skinClass="HScrollBar_thumbIcon");
+	thumbSkin: Embed(skinClass="HScrollBar_thumbSkin");
+	trackSkin: Embed(skinClass="HScrollBar_trackSkin");
+	upArrowSkin: Embed(skinClass="HScrollBar_upArrowSkin");
+}
+
+Slider, HSlider, VSlider
+{
+	thumbSkin: Embed(skinClass="Slider_thumbSkin");
+	trackHighlightSkin: Embed(skinClass="Slider_trackHighlightSkin");
+	trackSkin: Embed(skinClass="Slider_trackSkin");
+}
+VScrollBar
+{
+	downArrowSkin: Embed(skinClass="VScrollBar_downArrowSkin");
+	thumbIcon: Embed(skinClass="VScrollBar_thumbIcon");
+	thumbSkin: Embed(skinClass="VScrollBar_thumbSkin");
+	trackSkin: Embed(skinClass="VScrollBar_trackSkin");
+	upArrowSkin: Embed(skinClass="VScrollBar_upArrowSkin");
+}
+.play{
+		overSkin:Embed(source="images/play.png");
+        upSkin:Embed(source="images/play.png");
+        downSkin:Embed(source="images/play.png");
+        disabledSkin:Embed(source="images/playH.png");
+}
+.pause{
+	overSkin:Embed(source="images/pause.png");
+    upSkin:Embed(source="images/pause.png");
+    downSkin:Embed(source="images/pause.png");
+    disabledSkin:Embed(source="images/playH.png");
+}
+.stop{
+	overSkin:Embed(source="images/stop.png");
+    upSkin:Embed(source="images/stop.png");
+    downSkin:Embed(source="images/stop.png");
+    disabledSkin:Embed(source="images/stopH.png");
+}
+.up{
+	overSkin:Embed(source="images/up.png");
+    upSkin:Embed(source="images/up.png");
+    downSkin:Embed(source="images/up.png");
+}
+.down{
+	overSkin:Embed(source="images/down.png");
+    upSkin:Embed(source="images/down.png");
+    downSkin:Embed(source="images/down.png");
+}

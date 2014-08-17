@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="init();">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import com.soung.SongAction;
+			import com.util.FileManager;
+			import mx.collections.ArrayCollection;
+			import com.global.Global;
+			
+			private var kp:KPlayer=KPlayer.getInstance();
+			private var g:Global=Global.getInstance();
+			[Bindable]
+			private var tablels:ArrayCollection;
+			private function init():void{
+				var sa:SongAction=new SongAction();
+				this.tablels=sa.list();
+				this.addEvtListener();
+				addMenus();
+			}
+			private function addEvtListener():void{
+				g.addEventListener("refresh",refresh);
+				g.addEventListener("random",randomSong);
+				g.addEventListener("xunhuan",xunhuan);
+				g.addEventListener("next",next);
+			}
+			
+			private function randomSong(evt:Event):void{
+				
+			}
+			
+			private function xunhuan(evt:Event):void{
+				Alert.show("ok");
+				g.dispatchEvent(new Event("doubleclick"));
+			}
+			private function next(evt:Event):void{
+				
+			}
+			private function refresh(evt:Event):void{
+				var sa:SongAction=new SongAction();
+				this.tablels=sa.list();
+			}
+			
+//			public function getfirstSongUrl():String{
+//				var url:String=null;
+//			}
+			
+			//右键菜单
+			private function addMenus():void{
+				var mainMenu:NativeMenu=new NativeMenu();
+				var playMenu:NativeMenuItem=new NativeMenuItem("播放");
+				var pauseMenu:NativeMenuItem=new NativeMenuItem("暂停");
+				var addFileMenu:NativeMenuItem=new NativeMenuItem("添加文件");
+				var addFoderMenu:NativeMenuItem=new NativeMenuItem("添加文件夹");
+				var delFileMenu:NativeMenuItem=new NativeMenuItem("删除");
+				var addMenu:NativeMenu=new NativeMenu();
+				
+				playMenu.addEventListener(Event.SELECT,play);
+				pauseMenu.addEventListener(Event.SELECT,pause);
+				addFileMenu.addEventListener(Event.SELECT,addFile);
+				addFoderMenu.addEventListener(Event.SELECT,addFoder);
+				delFileMenu.addEventListener(Event.SELECT,delFile);
+				
+				mainMenu.addItem(playMenu);
+				mainMenu.addItem(pauseMenu);
+				addMenu.addItem(addFileMenu);
+				addMenu.addItem(addFoderMenu);
+				mainMenu.addSubmenu(addMenu,"添加");
+				mainMenu.addItem(delFileMenu);
+				this.contextMenu=mainMenu;
+				
+			}
+			
+			private function play(evt:Event):void{
+				if(dg.selectedItem!=null){
+					kp.soundUrl=dg.selectedItem.url;
+					kp.songTitle=dg.selectedItem.name;
+					g.dispatchEvent(new Event("rightPlay"));
+				}
+			}
+			private function pause(evt:Event):void{
+				g.dispatchEvent(new Event("pause"));
+			}
+			private function addFile(evt:Event):void{
+				var fileManager:FileManager=new FileManager();
+				fileManager.openFile();
+			}
+			private function addFoder(evtr:Event):void{
+				var fileManager:FileManager=new FileManager();
+				fileManager.openFolder();
+			}
+//			private function delFile(evt:Event):void{
+//				if(dg.selectedItem!=null){
+//					if(dg.selectedItem.url==kp.soundUrl){
+//						kp.stop();
+//						kp.soundUrl=null;
+//					}
+//					var sa:SongAction=new SongAction();
+//					sa.delSong(new Array(dg.selectedItem));
+//				}
+//			}
+
+			private function delFile(evt:Event):void{
+				if(dg.selectedItem!=null){
+					var selectArray:Array=dg.selectedItems;
+					var sa:SongAction=new SongAction();
+					var temArr:Array=null;
+					for(var i:int=0;i<selectArray.length;i++){
+						if(selectArray[i].url==kp.soundUrl){
+							kp.stop();
+							kp.soundUrl=null;
+						}
+						temArr=new Array();
+						temArr.push(selectArray[i]);
+						try{
+							sa.delSong(temArr);
+						}catch(e:Error){
+							this.refresh(new Event("refresh"));
+						}
+						temArr=null;
+					}
+					if(dg.selectedItem.url==kp.soundUrl){
+						kp.stop();
+						kp.soundUrl=null;
+					}
+					this.refresh(new Event("refresh"));
+				}
+			}
+			private function songChange():void{
+				if(dg.selectedItem!=null){
+					kp.soundUrl=dg.selectedItem.url;
+					kp.songTitle=dg.selectedItem.name;
+					g.dispatchEvent(new Event("readay"));
+				}
+			}
+			
+			private function doubleclick():void{
+				if(dg.selectedItem!=null){
+					kp.soundUrl=dg.selectedItem.url;
+					kp.songTitle=dg.selectedItem.name;
+					g.dispatchEvent(new Event("doubleclick"));
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:DataGrid id="dg" width="100%" height="100%" allowMultipleSelection="true" dataProvider="{this.tablels}" doubleClick="doubleclick();" doubleClickEnabled="true" change="songChange();">
+		<mx:columns>
+			<mx:DataGridColumn headerText="序号" width="50" dataField="id"/>
+			<mx:DataGridColumn headerText="歌曲名称" dataField="name"/>
+		</mx:columns>
+	</mx:DataGrid>
+</mx:Canvas>

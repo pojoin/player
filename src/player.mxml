@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" title="pojoin"
+	 initialize="init();" width="200" height="100" layout="absolute" xmlns:com="com.*" alwaysInFront="true">
+	<mx:Script>
+		<![CDATA[
+			import com.playRole.PlayRoleAction;
+			import mx.controls.Alert;
+			import com.SpeakerWindow;
+			import mx.managers.PopUpManager;
+			import mx.collections.ArrayCollection;
+			import com.KPlayer;
+			import com.global.Global;
+			private var g:Global=Global.getInstance();
+			private var kp:KPlayer=KPlayer.getInstance();
+			[Bindable]
+			private var sUrl:String;
+			private var tp:String="";
+			private var b:Boolean=true;
+			private var isShow:Boolean=false;
+			private var speakerWin:SpeakerWindow;
+			private var songTimer:Timer=new Timer(10, 0);
+
+			private var model1:NativeMenuItem=new NativeMenuItem("顺序播放");
+			private var model2:NativeMenuItem=new NativeMenuItem("随机播放");
+			private var model3:NativeMenuItem=new NativeMenuItem("单曲循环");
+			//右键菜单
+			private function addMenus():void{
+				var mainMenu:NativeMenu=new NativeMenu();
+				
+				var model:NativeMenu=new NativeMenu();
+				
+				model1.addEventListener(Event.SELECT,modelSelect);
+				model2.addEventListener(Event.SELECT,modelSelect);
+				model3.addEventListener(Event.SELECT,modelSelect);
+				
+				model.addItem(model1);
+				model.addItem(model2);
+				model.addItem(model3);
+				mainMenu.addSubmenu(model,"播放模式");
+				this.contextMenu=mainMenu;
+				
+				var pra:PlayRoleAction=new PlayRoleAction();
+				var num:Number=pra.getPlayRoleNum();
+				if(num==2){
+					model2.checked=true;
+				}else if(num==3){
+					model3.checked=true;
+				}else{
+					model1.checked=true;
+				}
+				
+			}			
+			
+			private function modelSelect(evt:Event):void{
+				var obj:Object=evt.currentTarget;
+				var pra:PlayRoleAction=new PlayRoleAction();
+				if(obj.label=="顺序播放"){
+					model1.checked=true;
+					model2.checked=false;
+					model3.checked=false;
+					pra.updatePlayRole(1);//
+				}
+				if(obj.label=="随机播放"){
+					model2.checked=true;
+					model1.checked=false;
+					model3.checked=false;
+					pra.updatePlayRole(2);
+				}
+				if(obj.label=="单曲循环"){
+					model3.checked=true;
+					model1.checked=false;
+					model2.checked=false;
+					pra.updatePlayRole(3);	
+				}
+			}
+		
+			
+			private function init():void{
+				this.addMenus();
+				this.addEventLisener();
+				if(kp.soundUrl==null||kp.soundUrl==""){
+					star.enabled=false;
+					stopsong.enabled=false;
+				}
+				songTimer.addEventListener(TimerEvent.TIMER,timerHandler);
+				songTimer.start();
+				star.styleName="play";
+				stopsong.styleName="stop";
+			}
+			private function timerHandler(evt:TimerEvent):void{
+				if(kp.checkChannel()){
+					progress.value=kp.getSongProgress();
+//					Alert.show(progress.value.toString());
+				}
+				if(progress.value==1){
+					var pra:PlayRoleAction=new PlayRoleAction();
+					var num:Number=pra.getPlayRoleNum();
+					if(num==2){
+						g.dispatchEvent(new Event("random"));
+					}else if(num==3){
+						g.dispatchEvent(new Event("xunhuan"));
+					}else{
+						g.dispatchEvent(new Event("next"));
+					}
+				}
+			}
+			
+			private function setPress():void{
+				kp.stop();
+				kp.contiunPlay(this.progress.value);
+			}
+			
+			
+			
+			private function addEventLisener():void{
+				g.addEventListener("readay",readay);
+				g.addEventListener("doubleclick",doubleclick);
+				g.addEventListener("pause",pauseSongNow);
+				g.addEventListener("rightPlay",rightPlay);
+			}
+			
+			private function rightPlay(evt:Event):void{
+				this.tp="select";
+				this.b=true;
+				play(new Event("play"));
+			}
+			private function pauseSongNow(evt:Event):void{
+				this.tp="";
+				this.b=false;
+				play(new Event("pause"));
+			}
+			private function doubleclick(evt:Event):void{
+				this.tp="select";
+				this.play(new Event("select"));
+			}
+			private function readay(evt:Event):void{
+				
+				if(kp.soundUrl!=null&&kp.soundUrl!=""){
+					this.tp="select";
+					star.enabled=true;
+				}
+			}
+			private function play(evt:Event):void{
+				if(b){
+					this.kp.play(this.tp);
+					b=false;
+					stopsong.enabled=true;
+				}else{
+					this.kp.pauseSoung();
+					this.tp="";
+					b=true;
+				}
+				this.setStatus();
+				this.status=kp.songTitle+"-"+"pojoin";
+			}
+			private function setStatus():void{
+				this.progress.value=kp.getSongPauseTime();
+				if(b){
+//					star.label="play";
+					star.styleName="play";
+				}else{
+//					star.label="pause";
+					star.styleName="pause";
+					stopsong.enabled=true;
+					stopsong.styleName="stop";
+				}
+				if(this.isShow){
+//					showbtn.label="close";
+					showbtn.styleName="up";
+				}else{
+//					showbtn.label="show";
+					showbtn.styleName="down";
+				}
+			}
+			private function stop():void{
+				this.kp.stop();
+				b=true;
+				this.setStatus();
+				stopsong.enabled=false;
+			}
+			private function show():void{
+				if(this.isShow){
+					this.height=this.height-200;
+					tablelist.height=0;
+					this.isShow=false;
+				}else{
+					this.height=this.height+200;
+					tablelist.height=200;
+					this.isShow=true;
+				}
+				setStatus();
+			}
+			
+//			private function popSpeaker():void{
+//				speakerWin=SpeakerWindow(PopUpManager.createPopUp(this,SpeakerWindow,false));
+//				speakerWin.x=this.loudspeaker.x+10;
+//				speakerWin.y=this.loudspeaker.y+10;
+//			}
+			private function removeSpeaker():void{
+				PopUpManager.removePopUp(speakerWin);
+			}
+			private function mdHandler():void{
+				this.songTimer.stop();
+			}
+			private function muHandler():void{
+				this.songTimer.start();
+			}
+			private function setVolume():void{
+				kp.setVolume(this.loaderpress.value);
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox width="100%" height="100%" verticalAlign="top">
+		<mx:VBox width="100%" height="50%">
+			<mx:HSlider id="progress" width="90%" minimum="0" maximum="1" change="setPress();" mouseUp="muHandler();" mouseDown="mdHandler();"/>
+			<mx:HBox width="100%" height="50%">
+				<mx:Button id="star" width="16" height="16" styleName="play" click="play(event)"/>
+				<mx:Button id="stopsong" width="16" height="16" styleName="stop" click="stop()"/>
+				<mx:Image  source="images/ka.png" width="16" height="16"/>
+				<mx:HSlider id="loaderpress" change="setVolume();" minimum="0" maximum="1" width="80" value="0.8"/>
+				<mx:Button id="showbtn" width="16" height="16" styleName="down" click="show()"/>
+			<!--	<mx:Button id="loudspeaker" label="speaker" click="popSpeaker();" mouseOut="removeSpeaker();"/>-->
+			</mx:HBox>
+		</mx:VBox>
+		<mx:VBox id="tablelist" width="100%" height="0">
+			<mx:Canvas width="100%" height="100%">
+				<com:TableList width="100%" height="100%"/>
+			</mx:Canvas>
+		</mx:VBox>
+	</mx:VBox>
+	<mx:Style source="skins/flex_skins.css"/>
+</mx:WindowedApplication>
